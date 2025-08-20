@@ -1,0 +1,84 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Run unit tests"
+  lane :test do
+    run_tests(
+      project: "temp_0.xcodeproj",
+      scheme: "temp_0",
+      destination: "platform=iOS Simulator,name=iPhone 15 Pro,OS=latest",
+      clean: true
+    )
+  end
+
+  desc "Generate screenshots using Fastlane snapshot"
+  lane :screenshots do
+    snapshot
+  end
+
+  desc "Build app for screenshots (no tests)"
+  lane :build_for_screenshots do
+    gym(
+      project: "temp_0.xcodeproj",
+      scheme: "temp_0_Screenshots",
+      skip_archive: true,
+      skip_codesigning: true,
+      destination: "generic/platform=iOS Simulator"
+    )
+    
+    UI.success("✅ App built successfully for screenshots!")
+    UI.message("📱 You can now manually take screenshots or use simulator")
+  end
+
+  desc "Run snapshot tests and generate screenshots"
+  lane :snapshot_tests do
+    # First run unit tests with snapshot testing
+    test
+    
+    # Then generate UI screenshots
+    screenshots
+    
+    UI.success("✅ Snapshot testing completed!")
+    UI.message("📸 Screenshots saved to: ./screenshots")
+    UI.message("🧪 Unit test snapshots saved to: ./temp_0Tests/__Snapshots__")
+  end
+
+  desc "Setup snapshot testing (run this once)"
+  lane :setup_snapshot do
+    # This will help set up the snapshot helper in your UI test target
+    UI.message("🔧 Setting up snapshot testing...")
+    UI.message("Please make sure to:")
+    UI.message("1. Add SnapshotTesting package dependency to your project")
+    UI.message("2. Import the snapshot helper in your UI tests")
+    UI.message("3. Run 'fastlane snapshot_tests' to generate your first snapshots")
+  end
+
+  desc "Clean and rebuild project"
+  lane :clean_build do
+    clean_build_artifacts
+    clear_derived_data
+    
+    gym(
+      project: "temp_0.xcodeproj",
+      scheme: "temp_0",
+      clean: true,
+      skip_archive: true,
+      skip_codesigning: true
+    )
+  end
+end
